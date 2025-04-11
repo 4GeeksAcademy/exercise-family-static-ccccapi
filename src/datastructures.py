@@ -1,4 +1,3 @@
-
 """
 update this file to implement the following already declared methods:
 - add_member: Should add a member to the self._members list
@@ -41,7 +40,7 @@ class FamilyStructure:
         for i, member in enumerate(self._members):
             if member["id"] == id:
                 self._members.pop(i)
-                return {"done": True}  # Asegurarse de devolver la clave "done" en la respuesta
+                return {"done": True}
         return {"done": False}
 
     def get_member(self, id):
@@ -75,14 +74,14 @@ def get_all_members():
     return jsonify(jackson_family.get_all_members()), 200
 
 # Ruta para agregar un nuevo miembro
-@app.route('/member', methods=['POST'])
+@app.route('/members', methods=['POST'])
 def add_member():
     member = request.get_json()
     new_member = jackson_family.add_member(member)
-    return jsonify(new_member), 201  # Corregir el código de estado a 201 (Creado)
+    return jsonify(new_member), 201
 
 # Ruta para obtener un miembro por ID
-@app.route('/member/<int:id>', methods=['GET'])
+@app.route('/members/<int:id>', methods=['GET'])
 def get_member(id):
     member = jackson_family.get_member(id)
     if member:
@@ -91,10 +90,20 @@ def get_member(id):
         return jsonify({"message": "Member not found"}), 404
 
 # Ruta para eliminar un miembro por ID
-@app.route('/member/<int:id>', methods=['DELETE'])
+@app.route('/members/<int:id>', methods=['DELETE'])
 def delete_member(id):
     result = jackson_family.delete_member(id)
-    return jsonify(result), 200  # Asegurarse de devolver {"done": True} o {"done": False}
+    return jsonify(result), 200
+
+# Ruta para actualizar un miembro por ID (opcional)
+@app.route('/members/<int:id>', methods=['PUT'])
+def update_member(id):
+    data = request.get_json()
+    updated = jackson_family.update_member(id, data)
+    if updated:
+        return jsonify(updated), 200
+    else:
+        return jsonify({"message": "Member not found"}), 404
 
 # Iniciar el servidor
 if __name__ == '__main__':

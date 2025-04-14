@@ -1,11 +1,3 @@
-"""
-update this file to implement the following already declared methods:
-- add_member: Should add a member to the self._members list
-- delete_member: Should delete a member from the self._members list
-- update_member: Should update a member from the self._members list
-- get_member: Should return a member from the self._members list
-"""
-
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -15,7 +7,6 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 CORS(app)
 
-# Definición de la clase FamilyStructure
 class FamilyStructure:
     def __init__(self, last_name):
         self.last_name = last_name
@@ -60,27 +51,34 @@ class FamilyStructure:
     def get_all_members(self):
         return self._members
 
-# Crear el objeto de la familia
 jackson_family = FamilyStructure("Jackson")
 
-# Manejar errores
 @app.errorhandler(Exception)
 def handle_invalid_usage(error):
     return jsonify({"message": str(error)}), 400
 
-# Ruta para obtener todos los miembros
 @app.route('/members', methods=['GET'])
 def get_all_members():
     return jsonify(jackson_family.get_all_members()), 200
 
-# Ruta para agregar un nuevo miembro
 @app.route('/members', methods=['POST'])
 def add_member():
-    member = request.get_json()
-    new_member = jackson_family.add_member(member)
-    return jsonify(new_member), 201
+    member_data = request.get_json()
 
-# Ruta para obtener un miembro por ID
+    required_fields = ["first_name", "age", "lucky_numbers"]
+    if not all(field in member_data for field in required_fields):
+        return jsonify({"error": "Faltan campos requeridos"}), 400
+
+    new_member = jackson_family.add_member(member_data)
+
+    return jsonify({
+        "id": new_member["id"],
+        "first_name": new_member["first_name"],
+        "age": new_member["age"],
+        "lucky_numbers": new_member["lucky_numbers"],
+        "last_name": new_member["last_name"]
+    }), 200
+
 @app.route('/members/<int:id>', methods=['GET'])
 def get_member(id):
     member = jackson_family.get_member(id)
@@ -89,13 +87,11 @@ def get_member(id):
     else:
         return jsonify({"message": "Member not found"}), 404
 
-# Ruta para eliminar un miembro por ID
 @app.route('/members/<int:id>', methods=['DELETE'])
 def delete_member(id):
     result = jackson_family.delete_member(id)
     return jsonify(result), 200
 
-# Ruta para actualizar un miembro por ID (opcional)
 @app.route('/members/<int:id>', methods=['PUT'])
 def update_member(id):
     data = request.get_json()
@@ -105,7 +101,6 @@ def update_member(id):
     else:
         return jsonify({"message": "Member not found"}), 404
 
-# Iniciar el servidor
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=True)
